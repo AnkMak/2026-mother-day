@@ -83,34 +83,183 @@
     50%      { opacity: 1;    transform: translateX(-50%) translateY(-5px); }
   }
 
-  /* ============ Continue button ============ */
-  .continue-btn {
+  /* ============ Next-stage interaction widgets ============ */
+  .next-stage {
     position: absolute;
-    bottom: 38px;
+    bottom: 36px;
     left: 50%;
-    transform: translateX(-50%);
-    padding: 12px 34px;
-    font-family: inherit;
-    font-size: 15px;
-    font-weight: 500;
-    color: #8B3A4A;
-    background: linear-gradient(135deg, #FFFFFF 0%, #FFF0F3 100%);
-    border: 1px solid rgba(232, 160, 160, 0.3);
-    border-radius: 30px;
-    box-shadow: 0 8px 24px rgba(232, 160, 160, 0.45),
-                0 2px 6px rgba(180, 80, 100, 0.15),
-                inset 0 -2px 0 rgba(232, 160, 160, 0.2);
-    cursor: pointer;
-    letter-spacing: 0.18em;
+    z-index: 30;
     opacity: 0;
     visibility: hidden;
-    transition: opacity 0.6s ease, transform 0.18s ease, box-shadow 0.18s ease;
-    z-index: 30;
+    transform: translateX(-50%) translateY(20px);
+    transition: opacity 0.6s ease, transform 0.6s ease, visibility 0s linear 0.6s;
   }
-  .continue-btn.visible { opacity: 1; visibility: visible; }
-  .continue-btn:active {
-    transform: translateX(-50%) scale(0.94);
+  .next-stage.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+    transition: opacity 0.6s ease, transform 0.6s ease, visibility 0s;
+  }
+  .next-label {
+    position: absolute;
+    bottom: -22px;
+    left: 0; right: 0;
+    text-align: center;
+    font-size: 11px;
+    color: rgba(91, 47, 63, 0.65);
+    letter-spacing: 0.25em;
+    pointer-events: none;
+  }
+
+  /* B: Scratch-off card */
+  .scratch-stage { width: 280px; height: 72px; }
+  .scratch-base {
+    position: absolute;
+    inset: 0;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #FFF0F3 0%, #FFC8D4 50%, #F5A0B8 100%);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; font-weight: 600;
+    color: #8B3A4A;
+    letter-spacing: 0.18em;
+    box-shadow: inset 0 2px 10px rgba(255,255,255,0.55), 0 8px 20px rgba(180,100,80,0.3);
+  }
+  .scratch-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%; height: 100%;
+    border-radius: 16px;
+    touch-action: none;
+    cursor: grab;
+  }
+
+  /* C: Ribbon untie */
+  .ribbon-stage { width: 300px; height: 80px; }
+  .ribbon-wrap { position: relative; width: 100%; height: 100%; }
+  .ribbon-svg {
+    position: absolute;
+    inset: 0;
+    width: 100%; height: 100%;
+    filter: drop-shadow(0 4px 8px rgba(180,120,60,0.3));
+    pointer-events: none;
+    overflow: visible;
+  }
+  #rloop-l, #rloop-r, #rknot, #rline-l, #rline-r {
+    transition: opacity 0.6s ease, transform 0.9s cubic-bezier(.4,0,.2,1);
+  }
+  .ribbon-handle {
+    position: absolute;
+    top: 50%;
+    width: 40px; height: 40px;
+    margin-top: -20px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.94);
+    color: #B47225;
+    font-size: 14px; font-weight: 700;
+    text-align: center; line-height: 40px;
+    cursor: grab;
+    touch-action: none;
+    z-index: 5;
+    box-shadow: 0 4px 14px rgba(180,100,30,0.4), inset 0 -2px 0 rgba(180,100,30,0.15);
+    transition: background 0.2s ease, box-shadow 0.2s ease;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .ribbon-handle.left  { left: 0; }
+  .ribbon-handle.right { right: 0; }
+  .ribbon-handle.dragging {
+    background: #FFD9B3;
+    cursor: grabbing;
+    box-shadow: 0 6px 18px rgba(180,100,30,0.5);
+  }
+
+  /* D: Envelope shake */
+  .envelope-stage {
+    width: 200px; height: 130px;
+    perspective: 700px;
+  }
+  .envelope {
+    position: relative;
+    width: 140px; height: 90px;
+    margin: 0 auto;
+    transform-style: preserve-3d;
+    filter: drop-shadow(0 8px 16px rgba(120, 50, 80, 0.32));
+  }
+  .envelope.shaking { animation: env-shake 0.45s ease-in-out infinite; }
+  @keyframes env-shake {
+    0%,100% { transform: rotate(-3deg) translateX(-2px); }
+    50%     { transform: rotate( 3deg) translateX( 2px); }
+  }
+  .env-body {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, #FFF8F0 0%, #FFE0E8 100%);
+    border: 1.5px solid #E8A0A0;
+    border-radius: 5px;
+    overflow: hidden;
+  }
+  .env-body::after {
+    content: '';
+    position: absolute;
+    bottom: 25%;
+    left: -2px; right: -2px;
+    height: 1px;
+    background: rgba(232, 160, 160, 0.4);
+  }
+  .env-flap {
+    position: absolute;
+    top: -1.5px;
+    left: -1.5px;
+    width: calc(100% + 3px);
+    height: 50%;
+    background: linear-gradient(135deg, #FFC8D4 0%, #F5A0B8 100%);
+    border: 1.5px solid #E8A0A0;
+    border-bottom: none;
+    border-radius: 5px 5px 0 0;
+    clip-path: polygon(0 0, 100% 0, 50% 100%);
+    transform-origin: top center;
+    transition: transform 0.85s cubic-bezier(.4,0,.2,1);
+    z-index: 3;
+  }
+  .envelope.opened .env-flap { transform: rotateX(-160deg); }
+  .env-stamp {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 26px;
+    opacity: 0;
+    transition: opacity 0.5s ease 0.35s, transform 0.7s cubic-bezier(.2,.7,.2,1.2) 0.35s;
+    z-index: 2;
+  }
+  .envelope.opened .env-stamp {
+    opacity: 1;
+    transform: translate(-50%, -130%) scale(1.35);
+  }
+  .env-shake-btn {
+    position: absolute;
+    bottom: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 7px 22px;
+    font-family: inherit;
+    font-size: 13px;
+    color: #8B3A4A;
+    background: rgba(255,255,255,0.9);
+    border: 1px solid rgba(232, 160, 160, 0.5);
+    border-radius: 22px;
     box-shadow: 0 4px 12px rgba(232, 160, 160, 0.4);
+    cursor: pointer;
+    letter-spacing: 0.15em;
+    transition: transform 0.15s ease;
+  }
+  .env-shake-btn:active { transform: translateX(-50%) scale(0.94); }
+  .envelope.opened ~ .env-shake-btn { opacity: 0; pointer-events: none; transition: opacity 0.4s ease; }
+  .env-burst {
+    position: absolute;
+    top: 45px; left: 50%;
+    width: 0; height: 0;
+    pointer-events: none;
+    z-index: 4;
   }
 
   /* ============ Petal & particle layers ============ */
@@ -523,7 +672,7 @@
   @supports(padding: max(0px)) {
     .audio-toggle { top: max(14px, env(safe-area-inset-top)); right: max(14px, env(safe-area-inset-right)); }
     .credit { bottom: max(30px, calc(env(safe-area-inset-bottom) + 18px)); }
-    .continue-btn { bottom: max(38px, calc(env(safe-area-inset-bottom) + 24px)); }
+    .next-stage   { bottom: max(36px, calc(env(safe-area-inset-bottom) + 22px)); }
   }
 </style>
 </head>
@@ -559,11 +708,15 @@
     <div class="hint" id="hint-1">滑動撕開禮物 🎁</div>
   </section>
 
-  <!-- ===== Scene 2: Greeting ===== -->
+  <!-- ===== Scene 2: Greeting (→ scratch off) ===== -->
   <section class="scene scene-2" id="scene-2">
     <div class="hearts-layer" id="hearts-2"></div>
     <div class="message"><span id="msg-text"></span></div>
-    <button class="continue-btn" id="continue-2">繼續 →</button>
+    <div class="next-stage scratch-stage" id="scratch-stage">
+      <div class="scratch-base">🌸 揭曉下一段</div>
+      <canvas class="scratch-canvas" id="scratch-canvas"></canvas>
+      <div class="next-label">手指刮開揭曉</div>
+    </div>
   </section>
 
   <!-- ===== Scene 3: Flower ===== -->
@@ -581,7 +734,27 @@
         </div>
       </div>
     </div>
-    <button class="continue-btn" id="continue-3">繼續 →</button>
+    <div class="next-stage ribbon-stage" id="ribbon-stage">
+      <div class="ribbon-wrap">
+        <svg class="ribbon-svg" viewBox="0 0 280 70" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="rgrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%"   stop-color="#FFE3B0"/>
+              <stop offset="50%"  stop-color="#E5A155"/>
+              <stop offset="100%" stop-color="#A56820"/>
+            </linearGradient>
+          </defs>
+          <line id="rline-l" x1="115" y1="35" x2="20"  y2="35" stroke="url(#rgrad)" stroke-width="9" stroke-linecap="round"/>
+          <line id="rline-r" x1="165" y1="35" x2="260" y2="35" stroke="url(#rgrad)" stroke-width="9" stroke-linecap="round"/>
+          <ellipse id="rloop-l" cx="105" cy="35" rx="22" ry="15" fill="url(#rgrad)"/>
+          <ellipse id="rloop-r" cx="175" cy="35" rx="22" ry="15" fill="url(#rgrad)"/>
+          <rect id="rknot" x="135" y="26" width="10" height="18" rx="3" fill="#A56820"/>
+        </svg>
+        <div class="ribbon-handle left"  id="rhandle-l">◀</div>
+        <div class="ribbon-handle right" id="rhandle-r">▶</div>
+      </div>
+      <div class="next-label">向兩側拉開緞帶</div>
+    </div>
   </section>
 
   <!-- ===== Scene 4: Card ===== -->
@@ -595,7 +768,16 @@
         <img src="assets/card-outside.jpeg" alt="卡片封面">
       </div>
     </div>
-    <button class="continue-btn" id="continue-4">繼續 →</button>
+    <div class="next-stage envelope-stage" id="envelope-stage">
+      <div class="env-burst" id="env-burst"></div>
+      <div class="envelope" id="envelope">
+        <div class="env-body"></div>
+        <div class="env-flap"></div>
+        <div class="env-stamp">💌</div>
+      </div>
+      <button class="env-shake-btn" id="env-shake-btn">點我搖晃 📳</button>
+      <div class="next-label">搖一搖手機 📳</div>
+    </div>
   </section>
 
   <!-- ===== Scene 5: Final ===== -->
@@ -638,8 +820,16 @@
 
   function onSceneEnter(n) {
     if (n === 2) startScene2();
-    else if (n === 3) { setTimeout(() => $('continue-3').classList.add('visible'), 1800); }
-    else if (n === 4) { setTimeout(() => $('continue-4').classList.add('visible'), 1400); }
+    else if (n === 3) {
+      setTimeout(() => {
+        $('ribbon-stage').classList.add('visible');
+      }, 1800);
+    }
+    else if (n === 4) {
+      setTimeout(() => {
+        $('envelope-stage').classList.add('visible');
+      }, 1400);
+    }
     else if (n === 5) startScene5();
   }
 
@@ -1099,7 +1289,11 @@
       if (!$('scene-2').classList.contains('active')) return;
       if (i >= MESSAGE.length) {
         el.classList.add('done');
-        setTimeout(() => $('continue-2').classList.add('visible'), 600);
+        setTimeout(() => {
+          $('scratch-stage').classList.add('visible');
+          // Initialize gold layer once dimensions are known
+          requestAnimationFrame(() => scratchHandler && scratchHandler.init());
+        }, 600);
         return;
       }
       el.textContent = MESSAGE.slice(0, i + 1);
@@ -1111,10 +1305,8 @@
     setTimeout(step, 700);
   }
 
-  $('continue-2').addEventListener('click', () => showScene(3));
-
   // ============================================================
-  //  Scene 3: Flower flip
+  //  Scene 3: Flower flip (click flower)
   // ============================================================
   $('flower-card').addEventListener('click', () => {
     onFirstInteraction();
@@ -1122,10 +1314,9 @@
     $('hint-3').style.transition = 'opacity 0.5s ease';
     $('hint-3').style.opacity = '0';
   });
-  $('continue-3').addEventListener('click', () => showScene(4));
 
   // ============================================================
-  //  Scene 4: Card open
+  //  Scene 4: Card open (click card)
   // ============================================================
   $('card-stage').addEventListener('click', () => {
     onFirstInteraction();
@@ -1133,7 +1324,309 @@
     $('hint-4').style.transition = 'opacity 0.5s ease';
     $('hint-4').style.opacity = '0';
   });
-  $('continue-4').addEventListener('click', () => showScene(5));
+
+  // ============================================================
+  //  Transition B: Scratch-off (Scene 2 → 3)
+  // ============================================================
+  function setupScratch() {
+    const canvas = $('scratch-canvas');
+    const sctx = canvas.getContext('2d');
+    const sdpr = Math.min(window.devicePixelRatio || 1, 2);
+    let drawing = false, lx = 0, ly = 0;
+    let lastSample = 0, done = false, ready = false;
+
+    function size() {
+      const r = canvas.getBoundingClientRect();
+      if (r.width < 4 || r.height < 4) return;
+      canvas.width  = (r.width  * sdpr) | 0;
+      canvas.height = (r.height * sdpr) | 0;
+      drawGold();
+      ready = true;
+    }
+    function drawGold() {
+      const w = canvas.width, h = canvas.height;
+      sctx.globalCompositeOperation = 'source-over';
+      const g = sctx.createLinearGradient(0, 0, w, 0);
+      g.addColorStop(0,    '#C9941F');
+      g.addColorStop(0.25, '#FFE9A8');
+      g.addColorStop(0.5,  '#E5B250');
+      g.addColorStop(0.75, '#FFE9A8');
+      g.addColorStop(1,    '#A6791C');
+      sctx.fillStyle = g;
+      sctx.fillRect(0, 0, w, h);
+      // shimmer streak
+      const s = sctx.createLinearGradient(0, 0, w, h);
+      s.addColorStop(0, 'rgba(255,255,255,0)');
+      s.addColorStop(0.5, 'rgba(255,255,255,0.35)');
+      s.addColorStop(1, 'rgba(255,255,255,0)');
+      sctx.fillStyle = s;
+      sctx.fillRect(0, 0, w, h);
+      // sparkles
+      sctx.fillStyle = 'rgba(255,255,255,0.55)';
+      for (let i = 0; i < 22; i++) {
+        const x = Math.random() * w, y = Math.random() * h;
+        sctx.beginPath();
+        sctx.arc(x, y, (1 + Math.random() * 1.5) * sdpr, 0, Math.PI * 2);
+        sctx.fill();
+      }
+      // text
+      sctx.fillStyle = 'rgba(120, 70, 20, 0.78)';
+      sctx.font = `${15 * sdpr}px "Noto Serif TC", serif`;
+      sctx.textAlign = 'center';
+      sctx.textBaseline = 'middle';
+      sctx.fillText('刮 開 揭 曉 ✨', w / 2, h / 2);
+    }
+    function getPos(e) {
+      const r = canvas.getBoundingClientRect();
+      const t = e.touches ? e.touches[0] : e;
+      return { x: (t.clientX - r.left) * sdpr, y: (t.clientY - r.top) * sdpr };
+    }
+    function start(e) {
+      if (done || !ready) return;
+      e.preventDefault();
+      onFirstInteraction();
+      drawing = true;
+      const p = getPos(e);
+      lx = p.x; ly = p.y;
+      sctx.globalCompositeOperation = 'destination-out';
+      sctx.beginPath();
+      sctx.arc(p.x, p.y, 18 * sdpr, 0, Math.PI * 2);
+      sctx.fill();
+    }
+    function move(e) {
+      if (!drawing || done) return;
+      e.preventDefault();
+      const p = getPos(e);
+      sctx.globalCompositeOperation = 'destination-out';
+      sctx.lineWidth = 36 * sdpr;
+      sctx.lineCap = 'round';
+      sctx.lineJoin = 'round';
+      sctx.beginPath();
+      sctx.moveTo(lx, ly);
+      sctx.lineTo(p.x, p.y);
+      sctx.stroke();
+      lx = p.x; ly = p.y;
+      sample();
+    }
+    function end() { drawing = false; }
+    function sample() {
+      const now = performance.now();
+      if (now - lastSample < 150 || done) return;
+      lastSample = now;
+      try {
+        const data = sctx.getImageData(0, 0, canvas.width, canvas.height).data;
+        let cleared = 0, total = 0;
+        for (let i = 3; i < data.length; i += 4 * 60) {
+          if (data[i] < 80) cleared++;
+          total++;
+        }
+        if (cleared / total > 0.6) {
+          done = true;
+          canvas.style.transition = 'opacity 0.5s ease';
+          canvas.style.opacity = '0';
+          setTimeout(() => showScene(3), 650);
+        }
+      } catch (e) {}
+    }
+
+    canvas.addEventListener('mousedown',  start);
+    canvas.addEventListener('mousemove',  move);
+    window.addEventListener('mouseup',    end);
+    canvas.addEventListener('touchstart', start, { passive: false });
+    canvas.addEventListener('touchmove',  move,  { passive: false });
+    canvas.addEventListener('touchend',   end);
+    canvas.addEventListener('touchcancel', end);
+
+    return { init: size };
+  }
+
+  // ============================================================
+  //  Transition C: Ribbon untie (Scene 3 → 4)
+  // ============================================================
+  function setupRibbon() {
+    const lh   = $('rhandle-l');
+    const rh   = $('rhandle-r');
+    const ll   = $('rline-l');
+    const rl   = $('rline-r');
+    const bl   = $('rloop-l');
+    const br   = $('rloop-r');
+    const knot = $('rknot');
+
+    const THRESHOLD = 60;
+    let leftPulled = 0, rightPulled = 0;
+    let triggered = false;
+
+    function updateLoop(loop, pulled) {
+      const t = Math.min(1, pulled / THRESHOLD);
+      loop.setAttribute('rx', String(22 - t * 18));
+      loop.setAttribute('ry', String(15 - t * 8));
+      loop.style.opacity = String(1 - t * 0.45);
+    }
+
+    function bindHandle(handle, side) {
+      let active = false, startX = 0, startPull = 0;
+
+      function down(e) {
+        if (triggered) return;
+        e.preventDefault();
+        e.stopPropagation();
+        onFirstInteraction();
+        active = true;
+        const t = e.touches ? e.touches[0] : e;
+        startX = t.clientX;
+        startPull = side === 'left' ? leftPulled : rightPulled;
+        handle.classList.add('dragging');
+      }
+      function moveEv(e) {
+        if (!active || triggered) return;
+        e.preventDefault();
+        const t = e.touches ? e.touches[0] : e;
+        const dx = t.clientX - startX;
+        const pulled = Math.max(0, Math.min(THRESHOLD * 1.6,
+          startPull + (side === 'left' ? -dx : dx)));
+        if (side === 'left') {
+          leftPulled = pulled;
+          handle.style.transform = `translateX(${-pulled}px)`;
+          updateLoop(bl, pulled);
+        } else {
+          rightPulled = pulled;
+          handle.style.transform = `translateX(${pulled}px)`;
+          updateLoop(br, pulled);
+        }
+        if (leftPulled >= THRESHOLD && rightPulled >= THRESHOLD) {
+          triggered = true;
+          untie();
+        }
+      }
+      function up() {
+        if (!active) return;
+        active = false;
+        handle.classList.remove('dragging');
+      }
+
+      handle.addEventListener('mousedown',  down);
+      handle.addEventListener('touchstart', down, { passive: false });
+      document.addEventListener('mousemove',  moveEv);
+      document.addEventListener('touchmove',  moveEv, { passive: false });
+      document.addEventListener('mouseup',    up);
+      document.addEventListener('touchend',   up);
+      document.addEventListener('touchcancel',up);
+    }
+
+    bindHandle(lh, 'left');
+    bindHandle(rh, 'right');
+
+    function untie() {
+      bl.style.transition = 'transform 0.95s cubic-bezier(.3,.6,.3,1), opacity 0.9s ease';
+      br.style.transition = 'transform 0.95s cubic-bezier(.3,.6,.3,1), opacity 0.9s ease';
+      bl.style.transform  = 'translate(-220px, -110px) scale(0.2) rotate(-540deg)';
+      br.style.transform  = 'translate( 220px, -110px) scale(0.2) rotate( 540deg)';
+      bl.style.opacity = '0';
+      br.style.opacity = '0';
+      knot.style.transition = 'transform 0.7s ease, opacity 0.6s ease';
+      knot.style.transform  = 'translateY(90px) rotate(180deg) scale(0.4)';
+      knot.style.opacity = '0';
+      ll.style.transition = 'opacity 0.5s ease, transform 0.6s ease';
+      rl.style.transition = 'opacity 0.5s ease, transform 0.6s ease';
+      ll.style.transform  = 'translateX(-30px)';
+      rl.style.transform  = 'translateX( 30px)';
+      ll.style.opacity = '0';
+      rl.style.opacity = '0';
+      lh.style.transition = 'opacity 0.5s ease';
+      rh.style.transition = 'opacity 0.5s ease';
+      lh.style.opacity = '0';
+      rh.style.opacity = '0';
+      lh.style.pointerEvents = 'none';
+      rh.style.pointerEvents = 'none';
+      setTimeout(() => showScene(4), 1050);
+    }
+  }
+
+  // ============================================================
+  //  Transition D: Envelope shake (Scene 4 → 5)
+  // ============================================================
+  function setupEnvelope() {
+    const env  = $('envelope');
+    const btn  = $('env-shake-btn');
+    const burstLayer = $('env-burst');
+    let triggered = false;
+    let shakeAccum = 0;
+    let motionListening = false;
+
+    function trigger() {
+      if (triggered) return;
+      triggered = true;
+      env.classList.remove('shaking');
+      env.classList.add('opened');
+      burstFromEnvelope();
+      setTimeout(() => showScene(5), 1150);
+    }
+
+    function burstFromEnvelope() {
+      for (let i = 0; i < 20; i++) {
+        const p = document.createElement('div');
+        p.className = 'burst-petal';
+        const ang  = (Math.PI * 2 * i / 20) - Math.PI / 2 + (Math.random() - 0.5) * 0.6;
+        const dist = 70 + Math.random() * 130;
+        p.style.setProperty('--bx', Math.cos(ang) * dist + 'px');
+        p.style.setProperty('--by', (Math.sin(ang) * dist - 40) + 'px');
+        p.style.setProperty('--br', (Math.random() * 720 - 360) + 'deg');
+        const c = PETAL_COLORS[(Math.random() * PETAL_COLORS.length) | 0];
+        p.style.background = `radial-gradient(ellipse at 30% 30%, #FFFFFF, ${c})`;
+        const sz = 10 + Math.random() * 12;
+        p.style.width = p.style.height = sz + 'px';
+        p.style.animationDelay = (Math.random() * 0.18) + 's';
+        burstLayer.appendChild(p);
+        setTimeout(() => p.remove(), 1900);
+      }
+    }
+
+    function onMotion(e) {
+      if (triggered) return;
+      const a = e.accelerationIncludingGravity || e.acceleration;
+      if (!a) return;
+      const mag = Math.hypot(a.x || 0, a.y || 0, a.z || 0);
+      const dyn = Math.abs(mag - 9.8);
+      if (dyn > 7) {
+        shakeAccum += dyn;
+        env.classList.add('shaking');
+      } else {
+        shakeAccum *= 0.9;
+        if (shakeAccum < 4) env.classList.remove('shaking');
+      }
+      if (shakeAccum > 80) trigger();
+    }
+
+    function attachMotion() {
+      if (motionListening) return;
+      if (typeof DeviceMotionEvent === 'undefined') return;
+      window.addEventListener('devicemotion', onMotion);
+      motionListening = true;
+    }
+
+    // Try to listen passively (Android/desktop don't need permission)
+    if (typeof DeviceMotionEvent !== 'undefined' &&
+        typeof DeviceMotionEvent.requestPermission !== 'function') {
+      attachMotion();
+    }
+
+    btn.addEventListener('click', () => {
+      onFirstInteraction();
+      // iOS 13+ requires explicit permission inside a user gesture.
+      if (typeof DeviceMotionEvent !== 'undefined' &&
+          typeof DeviceMotionEvent.requestPermission === 'function') {
+        DeviceMotionEvent.requestPermission()
+          .then(r => { if (r === 'granted') attachMotion(); })
+          .catch(() => {});
+      }
+      // The button itself is also a fallback trigger.
+      trigger();
+    });
+  }
+
+  let scratchHandler = setupScratch();
+  setupRibbon();
+  setupEnvelope();
 
   // ============================================================
   //  Scene 5: Final reveal
