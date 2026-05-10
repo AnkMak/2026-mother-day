@@ -342,15 +342,10 @@
   .flower-face img {
     width: 100%; height: 100%;
     object-fit: contain;
-    mix-blend-mode: multiply;
-    filter: contrast(1.06) saturate(1.15);
+    filter: contrast(1.04) saturate(1.08);
     pointer-events: none;
-    transition: opacity 0.5s ease, filter 0.5s ease;
-  }
-  .flower-face img.processed {
-    mix-blend-mode: normal;
-    background: transparent;
-    filter: contrast(1.05) saturate(1.12) drop-shadow(0 6px 14px rgba(180, 80, 110, 0.35));
+    border-radius: 12px;
+    box-shadow: 0 8px 22px rgba(180, 80, 110, 0.28);
   }
   .flower-face.back { transform: rotateY(180deg); }
 
@@ -382,16 +377,10 @@
   }
   .card-inside img, .card-cover img {
     width: 100%; height: 100%;
-    object-fit: contain;
-    mix-blend-mode: multiply;
-    filter: contrast(1.04) saturate(1.08);
+    object-fit: cover;
+    filter: contrast(1.03) saturate(1.05);
     pointer-events: none;
-    transition: filter 0.5s ease;
-  }
-  .card-inside img.processed, .card-cover img.processed {
-    mix-blend-mode: normal;
-    background: transparent;
-    filter: contrast(1.05) saturate(1.10) drop-shadow(0 6px 14px rgba(160, 80, 60, 0.35));
+    border-radius: 6px;
   }
   .card-cover {
     transform-origin: left center;
@@ -439,27 +428,20 @@
   }
   #final-photo {
     width: 100%; height: 100%;
-    object-fit: contain;
-    border-radius: 10px;
-    mix-blend-mode: multiply;
+    object-fit: cover;
+    border-radius: 14px;
     opacity: 0;
     transform: scale(1.05);
     filter: blur(24px) saturate(1.2);
-    transition: opacity 2.2s ease, filter 2.2s ease, transform 2.2s ease;
+    transition: opacity 2.2s ease, filter 2.2s ease, transform 2.2s ease, box-shadow 2.2s ease;
     pointer-events: none;
-  }
-  #final-photo.processed {
-    mix-blend-mode: normal;
-    background: transparent;
-    border-radius: 0;
+    box-shadow: 0 12px 28px rgba(140, 70, 100, 0.35);
   }
   .scene-5.activated #final-photo {
     opacity: 1;
     transform: scale(1);
-    filter: blur(0) saturate(1.1) contrast(1.04);
-  }
-  .scene-5.activated #final-photo.processed {
-    filter: blur(0) saturate(1.08) contrast(1.04) drop-shadow(0 8px 20px rgba(140, 70, 100, 0.45));
+    filter: blur(0) saturate(1.08) contrast(1.04);
+    box-shadow: 0 14px 36px rgba(140, 70, 100, 0.45);
   }
   .final-message {
     position: absolute;
@@ -1160,136 +1142,6 @@
     setTimeout(() => $('scene-5').classList.add('activated'), 250);
     swellMusic();
   }
-
-  // ============================================================
-  //  Background removal (Canvas pixel-level keying)
-  //  Removes white/near-white paper background from JPEGs.
-  // ============================================================
-  function runBgRemoval(imgEl, opts) {
-    if (imgEl.dataset.processed === '1') return;
-    imgEl.dataset.processed = '1';
-
-    const maxSize = opts.maxSize || 1200;
-    const w = imgEl.naturalWidth, h = imgEl.naturalHeight;
-    if (!w || !h) { imgEl.dataset.processed = ''; return; }
-    const scale = Math.min(1, maxSize / Math.max(w, h));
-    const tw = Math.max(1, Math.round(w * scale));
-    const th = Math.max(1, Math.round(h * scale));
-
-    const canvas = document.createElement('canvas');
-    canvas.width = tw; canvas.height = th;
-    const cx = canvas.getContext('2d');
-    cx.drawImage(imgEl, 0, 0, tw, th);
-
-    let imgData;
-    try { imgData = cx.getImageData(0, 0, tw, th); }
-    catch (e) {
-      console.warn('Canvas tainted (likely file:// CORS) — keeping mix-blend-mode fallback.');
-      imgEl.dataset.processed = '';
-      return;
-    }
-
-    const d = imgData.data;
-    const threshold = opts.threshold ?? 240;   // luma ≥ this  → fully transparent
-    const fadeStart = opts.fadeStart ?? 200;   // luma > this  → partial transparency
-    const satMax    = opts.satMax    ?? 0.22;  // saturation < this counts as "background"
-    const range = Math.max(1, threshold - fadeStart);
-
-    for (let i = 0; i < d.length; i += 4) {
-      const r = d[i], g = d[i + 1], b = d[i + 2];
-      const max = r > g ? (r > b ? r : b) : (g > b ? g : b);
-      const min = r < g ? (r < b ? r : b) : (g < b ? g : b);
-      const luma = 0.299 * r + 0.587 * g + 0.114 * b;
-      const sat  = max === 0 ? 0 : (max - min) / max;
-
-      if (sat < satMax) {
-        if (luma >= threshold) {
-          d[i + 3] = 0;
-        } else if (luma > fadeStart) {
-          d[i + 3] = ((threshold - luma) / range * 255) | 0;
-        }
-      }
-    }
-
-    cx.putImageData(imgData, 0, 0);
-
-    // Clean fringe: a tiny erode-like step removes leftover halo on edges.
-    if (opts.cleanFringe !== false) {
-      cleanEdgeFringe(cx, tw, th);
-    }
-
-    try {
-      imgEl.src = canvas.toDataURL('image/png');
-      imgEl.classList.add('processed');
-    } catch (e) {
-      console.warn('toDataURL failed', e);
-      imgEl.dataset.processed = '';
-    }
-  }
-
-  // Soft-erode pass: if a pixel is mostly transparent, push neighbours’
-  // alpha down a touch — kills the gray halo around cut-outs.
-  function cleanEdgeFringe(ctx, w, h) {
-    const src = ctx.getImageData(0, 0, w, h);
-    const out = ctx.createImageData(w, h);
-    const s = src.data, o = out.data;
-    o.set(s);
-    for (let y = 1; y < h - 1; y++) {
-      for (let x = 1; x < w - 1; x++) {
-        const idx = (y * w + x) * 4;
-        const a = s[idx + 3];
-        if (a > 0 && a < 220) {
-          // count near-transparent neighbours
-          let lows = 0;
-          if (s[idx - 4 + 3] < 60) lows++;
-          if (s[idx + 4 + 3] < 60) lows++;
-          if (s[idx - w * 4 + 3] < 60) lows++;
-          if (s[idx + w * 4 + 3] < 60) lows++;
-          if (lows >= 2) o[idx + 3] = (a * 0.55) | 0;
-        }
-      }
-    }
-    ctx.putImageData(out, 0, 0);
-  }
-
-  function processImg(imgEl, opts) {
-    if (!imgEl) return;
-    const run = () => runBgRemoval(imgEl, opts);
-    if (imgEl.complete && imgEl.naturalWidth > 0) {
-      run();
-    } else {
-      imgEl.addEventListener('load', run, { once: true });
-      imgEl.addEventListener('error', () => {
-        console.warn('Image failed to load:', imgEl.src);
-      }, { once: true });
-    }
-  }
-
-  // Per-image tuning. Hand-drawn art tolerates aggressive thresholds; the
-  // photo of the daughter uses gentler keying so skin/clothing are preserved.
-  const BG_TARGETS = [
-    { sel: '.flower-face.front img', opts: { threshold: 238, fadeStart: 195, satMax: 0.22 } },
-    { sel: '.flower-face.back img',  opts: { threshold: 238, fadeStart: 195, satMax: 0.22 } },
-    { sel: '.card-cover img',        opts: { threshold: 240, fadeStart: 200, satMax: 0.20 } },
-    { sel: '.card-inside img',       opts: { threshold: 240, fadeStart: 200, satMax: 0.20 } },
-    { sel: '#final-photo',           opts: { threshold: 245, fadeStart: 215, satMax: 0.16, maxSize: 1000 } }
-  ];
-
-  // Process sequentially with idle gaps so the main thread stays responsive
-  // while the user is busy tearing the gift wrap.
-  function processAllImages() {
-    let i = 0;
-    function next() {
-      if (i >= BG_TARGETS.length) return;
-      const t = BG_TARGETS[i++];
-      const img = document.querySelector(t.sel);
-      processImg(img, t.opts);
-      // give the UI a breath between heavy decodes
-      setTimeout(next, 120);
-    }
-    next();
-  }
-  processAllImages();
 
   // ============================================================
   //  Init
